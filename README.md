@@ -1,6 +1,6 @@
 # maps_app
 
-A new Flutter project.
+A new Flutter project for learning integration of Maps inside a flutter application. It should be consisting of searching, and polyline (direction) functionalities.
 
 ## Getting Started
 
