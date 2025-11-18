@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
@@ -22,7 +23,7 @@ class _MapPageState extends State<MapPage> {
   // final _sabhagriha = LatLng(28.2102, 83.9846); // Sabhagriha Chowk
   // final _buddha = LatLng(28.20680, 83.99510); //Buddha Chowk
 
-  final MapController _mapController = MapController();
+  // final MapController _mapController = MapController();
   final Location _location = Location();
   final TextEditingController _searchController = TextEditingController();
   bool isLoading = true;
@@ -86,10 +87,136 @@ class _MapPageState extends State<MapPage> {
       final data = jsonDecode(response.body);
       final geometry = data['routes'][0]['geometry'];
       _decodePolyline(geometry);
+      _bottomSheetShow(_currentLocation!, _destination!);
+      
 
     }else{
       errorMessage('Failed to fetch route. Try again later.');
     }
+  }
+
+  String formatDistance(double distanceInMeters) {
+    double distanceInKM;
+    if (distanceInMeters < 1000) {
+      return "${distanceInMeters.toStringAsFixed(2)} m";
+    } else {
+      distanceInKM = distanceInMeters / 1000;
+      return "${distanceInKM.toStringAsFixed(2)} km";
+    }
+  }
+
+  Future<void> _bottomSheetShow(LatLng _currentLocation, LatLng _destination) async{
+    String formatedDistance;
+    double calculatedDistance = await _calculateDistance(_currentLocation, _destination);
+      if(calculatedDistance > 0){
+        formatedDistance = formatDistance(calculatedDistance);
+        Scaffold.of(context).showBottomSheet(
+          backgroundColor: Colors.blue,
+          (context) => Container(
+            height: 200,
+            color: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Column(
+              children: [
+                Text('Vehicles', style: TextStyle(fontWeight: FontWeight.w500),),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.blue,
+                      child: Icon(
+                        Icons.bike_scooter_outlined,
+                        color: Colors.white,
+                        size: 40,
+                      ), 
+                    ),SizedBox(height: 12,),
+                    Text("Motorbike",style: TextStyle(fontWeight: FontWeight.w500),),
+                      ],
+                    ),
+
+//                     Card(
+//   elevation: 4,
+//   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//   child: Padding(
+//     padding: const EdgeInsets.all(16.0),
+//     child: Column(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         CircleAvatar(
+//           radius: 60,
+//           backgroundImage: AssetImage('assets/images/rider_image.jpg'), // Use NetworkImage if from URL
+//           backgroundColor: Colors.blue,
+//           child: Icon(
+//             Icons.bike_scooter_outlined,
+//             color: Colors.white,
+//             size: 40,
+//           ),
+//         ),
+//         SizedBox(height: 12),
+//         Text(
+//           "Rider Name",
+//           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+//         ),
+//         SizedBox(height: 8),
+//         Text(
+//           "\$Price",
+//           style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+//         ),
+//         SizedBox(height: 8),
+//         Row(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Icon(Icons.star, color: Colors.amber, size: 16),
+//             SizedBox(width: 4),
+//             Text(
+//               "Rating",
+//               style: TextStyle(fontWeight: FontWeight.w500),
+//             ),
+//           ],
+//         ),
+//       ],
+//     ),
+//   ),
+// )
+
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.blue,
+                      child: Icon(
+                        Icons.car_rental_outlined,
+                        color: Colors.white,
+                        size: 40,
+                      ), 
+                    ),SizedBox(height: 12,),
+                    Text("Car",style: TextStyle(fontWeight: FontWeight.w500),),
+                      ],
+                    ),
+                    
+                  ],
+                ),
+              ],
+            )),
+          ),
+        );
+      }else{
+        errorMessage("Failed to calculate distance. Try again later.");
+      }
+  }
+
+  Future<double> _calculateDistance(LatLng _currentLocation, LatLng _destination) async{
+    if(_currentLocation != null && _destination != null){
+      double distanceInMeters = await distance2point(GeoPoint(longitude: _currentLocation.longitude,latitude: _currentLocation.latitude,),GeoPoint( longitude: _destination.longitude, latitude: _destination.latitude, ),);
+      return distanceInMeters;
+    }
+    return 0;
   }
 
   void _decodePolyline(String encodedPolyline) {
@@ -122,7 +249,8 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _userCurrentLocation() async{
     if(_currentLocation != null){
-      _mapController.move(_currentLocation!, 14);
+      /// _mapController not compatible with OSMFlutter
+      // _mapController.move(_currentLocation!, 14);
     }else{
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Current Location not available."))
@@ -146,7 +274,8 @@ class _MapPageState extends State<MapPage> {
           children: [
             isLoading ? Center(child: CircularProgressIndicator()):
             FlutterMap(
-              mapController: _mapController,
+              /// Not compatible with OSMFlutter
+              // mapController: _mapController,
               options: MapOptions(
                 initialCenter: _currentLocation ?? const LatLng(0,0),
                 initialZoom: 13
