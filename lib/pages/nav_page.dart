@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:maps_app/pages/home_page.dart';
 import 'package:maps_app/pages/map_page.dart';
 import 'package:maps_app/pages/profile_page.dart';
-// import 'package:flutter_map/flutter_map.dart';
-// import 'package:latlong2/latlong.dart';
-// import 'package:maps_app/pages/home_page.dart';
 
 class NavPage extends StatefulWidget {
   const NavPage({super.key});
@@ -26,7 +23,7 @@ class _NavPageState extends State<NavPage> {
       appBar: AppBar(
         centerTitle: true,
         toolbarHeight: 80,
-        title: Text('Flutter Maps',
+        title: Text('Maps.J',
         style: TextStyle(
           fontWeight: FontWeight.bold
         ),),
